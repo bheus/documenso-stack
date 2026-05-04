@@ -7,21 +7,20 @@ Documenso stack for `apple-pi.lan`, deployed through Portainer from Git.
 - Git is the source of truth.
 - Portainer deploys the stack from this repo.
 - Secrets do not live in Git.
-- Persistent state uses absolute host paths on `apple-pi`.
+- Postgres state lives in a Docker named volume.
+- The signing certificate stays as a host file on `apple-pi`.
 
 ## Host paths on apple-pi
 
-Create these on the host before first deploy:
+Create this on the host before first deploy:
 
 ```bash
-mkdir -p /home/bheussler/documenso/data/postgres
 mkdir -p /home/bheussler/documenso/secrets
 chmod 700 /home/bheussler/documenso/secrets
 ```
 
-Expected files:
+Expected file:
 
-- Postgres data: `/home/bheussler/documenso/data/postgres`
 - Signing cert: `/home/bheussler/documenso/secrets/cert.p12`
 
 ## Generate app secrets
@@ -71,7 +70,7 @@ Important:
 
 - This compose intentionally uses `env_file: ./stack.env` behavior via Portainer's repo-root env handling.
 - Keep the compose file at the repo root so Portainer's generated `stack.env` resolves cleanly.
-- Use absolute host paths for bind mounts. Do not switch these to relative paths.
+- Only the certificate uses a host bind mount. Do not switch it to a relative path.
 
 ## First boot
 
@@ -97,7 +96,7 @@ docker restart cloudflared-tunnel
 
 Back up:
 
-- PostgreSQL database
+- PostgreSQL named volume `documenso_postgres_data`
 - `/home/bheussler/documenso/secrets/cert.p12`
 - Portainer-managed env values or an exported copy of `stack.env`
 
