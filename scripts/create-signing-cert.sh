@@ -19,7 +19,7 @@ openssl req -new -x509 \
   -key "${TMPDIR}/private.key" \
   -out "${TMPDIR}/certificate.crt" \
   -days 3650 \
-  -subj "/C=US/ST=California/L=San Diego/O=Built by Brendan/OU=Consulting/CN=Built by Brendan Signing/emailAddress=brendan@builtbybrendan.com" \
+  -subj "/C=US/ST=California/L=San Diego/O=Brendan Heussler/OU=Consulting/CN=Brendan Heussler Signing/emailAddress=brendan@builtbybrendan.com" \
   >/dev/null 2>&1
 openssl pkcs12 -export \
   -out "${SECRETS_DIR}/cert.p12" \

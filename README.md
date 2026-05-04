@@ -82,7 +82,7 @@ Important:
 After local validation on `http://apple-pi.lan:3020`, add this to `/etc/cloudflared/config.yml` on `apple-pi`:
 
 ```yaml
-- hostname: contracts.builtbybrendan.com
+- hostname: sign.builtbybrendan.com
   service: http://localhost:3020
 ```
 
