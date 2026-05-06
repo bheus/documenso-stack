@@ -6,8 +6,9 @@ if [ -z "${DOCUMENSO_CERT_PASSWORD:-}" ]; then
   exit 1
 fi
 
-BASE_DIR="/home/bheussler/documenso"
+BASE_DIR="${DOCUMENSO_BASE_DIR:-${HOME}/documenso}"
 SECRETS_DIR="${BASE_DIR}/secrets"
+CERT_SUBJECT="${DOCUMENSO_CERT_SUBJECT:-/C=US/ST=State/L=City/O=Organization/OU=Signing/CN=Documenso Signing/emailAddress=admin@example.com}"
 TMPDIR="$(mktemp -d)"
 trap 'rm -rf "${TMPDIR}"' EXIT
 
@@ -19,7 +20,7 @@ openssl req -new -x509 \
   -key "${TMPDIR}/private.key" \
   -out "${TMPDIR}/certificate.crt" \
   -days 3650 \
-  -subj "/C=US/ST=California/L=San Diego/O=Brendan Heussler/OU=Consulting/CN=Brendan Heussler Signing/emailAddress=brendan@builtbybrendan.com" \
+  -subj "${CERT_SUBJECT}" \
   >/dev/null 2>&1
 openssl pkcs12 -export \
   -out "${SECRETS_DIR}/cert.p12" \
@@ -28,6 +29,6 @@ openssl pkcs12 -export \
   -password env:DOCUMENSO_CERT_PASSWORD \
   >/dev/null 2>&1
 
-chmod 400 "${SECRETS_DIR}/cert.p12"
+chmod 444 "${SECRETS_DIR}/cert.p12"
 
 echo "Wrote ${SECRETS_DIR}/cert.p12"

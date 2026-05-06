@@ -1,6 +1,6 @@
 # Documenso Stack
 
-Documenso stack for `apple-pi.lan`, deployed through Portainer from Git.
+Documenso stack deployed through Portainer from Git.
 
 ## Model
 
@@ -8,24 +8,24 @@ Documenso stack for `apple-pi.lan`, deployed through Portainer from Git.
 - Portainer deploys the stack from this repo.
 - Secrets do not live in Git.
 - Postgres state lives in a Docker named volume.
-- The signing certificate stays as a host file on `apple-pi`.
+- The signing certificate stays as a host file outside Git.
 
-## Host paths on apple-pi
+## Host Paths
 
 Create this on the host before first deploy:
 
 ```bash
-mkdir -p /home/bheussler/documenso/secrets
-chmod 700 /home/bheussler/documenso/secrets
+mkdir -p /srv/documenso/secrets
+chmod 700 /srv/documenso/secrets
 ```
 
 Expected file:
 
-- Signing cert: `/home/bheussler/documenso/secrets/cert.p12`
+- Signing cert: `/srv/documenso/secrets/cert.p12`
 
 ## Generate app secrets
 
-Use these on `apple-pi` and paste the values into Portainer's environment UI:
+Generate these on the Docker host and paste the values into Portainer's environment UI:
 
 ```bash
 openssl rand -hex 24
@@ -45,18 +45,20 @@ Map them like this:
 
 ## Generate signing certificate
 
-Run [`scripts/create-signing-cert.sh`](scripts/create-signing-cert.sh) on `apple-pi` after setting `DOCUMENSO_CERT_PASSWORD` in the shell.
+Run [`scripts/create-signing-cert.sh`](scripts/create-signing-cert.sh) on the Docker host after setting `DOCUMENSO_CERT_PASSWORD` in the shell.
 
 Example:
 
 ```bash
 export DOCUMENSO_CERT_PASSWORD='your-p12-password'
+export DOCUMENSO_BASE_DIR='/srv/documenso'
+export DOCUMENSO_CERT_SUBJECT='/C=US/ST=State/L=City/O=Organization/OU=Signing/CN=Documenso Signing/emailAddress=admin@example.com'
 ./scripts/create-signing-cert.sh
 ```
 
 The script writes:
 
-- `/home/bheussler/documenso/secrets/cert.p12`
+- `${DOCUMENSO_BASE_DIR}/secrets/cert.p12`
 
 ## Portainer deployment
 
@@ -70,7 +72,7 @@ Important:
 
 - This compose intentionally uses `env_file: ./stack.env` behavior via Portainer's repo-root env handling.
 - Keep the compose file at the repo root so Portainer's generated `stack.env` resolves cleanly.
-- Only the certificate uses a host bind mount. Do not switch it to a relative path.
+- Only the certificate uses a host bind mount. Set `DOCUMENSO_CERT_HOST_PATH` in Portainer to the absolute host path.
 
 ## First boot
 
@@ -79,29 +81,27 @@ Important:
 
 ## Exposure
 
-After local validation on `http://apple-pi.lan:3020`, add this to `/etc/cloudflared/config.yml` on `apple-pi`:
+After local validation, publish the service through your reverse proxy or tunnel. Example Cloudflare Tunnel ingress:
 
 ```yaml
-- hostname: sign.builtbybrendan.com
+- hostname: sign.example.com
   service: http://localhost:3020
 ```
 
-Then apply it with:
+Then reload or restart your tunnel/reverse-proxy service.
 
-```bash
-docker restart cloudflared-tunnel
-```
+Keep `NEXT_PUBLIC_WEBAPP_URL` set to the public URL users will open.
 
 ## Backup boundary
 
 Back up:
 
 - PostgreSQL named volume `documenso_postgres_data`
-- `/home/bheussler/documenso/secrets/cert.p12`
+- The certificate file referenced by `DOCUMENSO_CERT_HOST_PATH`
 - Portainer-managed env values or an exported copy of `stack.env`
 
 ## Notes
 
 - Documenso requires PostgreSQL, not MySQL.
 - Database-backed uploads are simplest to start with and keep the stack small.
-- Once the deployment is stable, pin the Documenso image to a tested tag instead of `latest`.
+- Keep the Documenso image pinned to a tested tag and update deliberately.

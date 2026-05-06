@@ -35,7 +35,7 @@ services:
     ports:
       - "3020:3000"
     volumes:
-      - /home/bheussler/documenso/secrets/cert.p12:/opt/documenso/cert.p12:ro
+      - ${DOCUMENSO_CERT_HOST_PATH:?err}:/opt/documenso/cert.p12:ro
 
 volumes:
   documenso_postgres_data:
