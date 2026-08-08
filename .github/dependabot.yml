@@ -1,0 +1,15 @@
+version: 2
+updates:
+  - package-ecosystem: "docker-compose"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+    commit-message:
+      prefix: "deps"
+    ignore:
+      # A postgres major bump cannot be taken by changing the tag: the data dir is
+      # major-version-specific (PG_VERSION=15) and the container refuses to start
+      # against it. Needs pg_upgrade or dump/restore, deliberately.
+      - dependency-name: "postgres"
+        update-types: ["version-update:semver-major"]
