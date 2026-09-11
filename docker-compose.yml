@@ -36,6 +36,23 @@ services:
       - "3020:3000"
     volumes:
       - ${DOCUMENSO_CERT_HOST_PATH:?err}:/opt/documenso/cert.p12:ro
+    networks:
+      - default
+      - caddy
+    labels:
+      # http:// is explicit: a bare hostname makes Caddy attempt ACME, which
+      # cannot succeed for .lan and leaves the route dead.
+      #
+      # Documenso builds absolute URLs from NEXT_PUBLIC_WEBAPP_URL, so this
+      # hostname is for reaching the UI, not a second canonical origin — signing
+      # links keep pointing at sign.builtbybrendan.com.
+      - "caddy=http://documenso.svc.lan"
+      - "caddy.reverse_proxy={{upstreams 3000}}"
+
+networks:
+  caddy:
+    external: true
+    name: caddy
 
 volumes:
   documenso_postgres_data:
