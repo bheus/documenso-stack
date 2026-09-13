@@ -20,7 +20,7 @@ services:
       - documenso_postgres_data:/var/lib/postgresql/data
 
   documenso:
-    image: ghcr.io/documenso/documenso:v2.17.0
+    image: ghcr.io/documenso/documenso:v2.18.0
     container_name: documenso
     restart: unless-stopped
     depends_on:
